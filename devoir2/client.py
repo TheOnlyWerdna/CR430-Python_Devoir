@@ -1,11 +1,11 @@
 # Import socket module
 import socket			
-
+import os
 # Create a socket object
 s = socket.socket()		
 
 # Define the port on which you want to connect
-port = 1337
+port = 1339
 
 # connect to the server on local computer
 s.connect(('127.0.0.1', port))
@@ -25,9 +25,19 @@ while connectedToServer:
     if requestToServer not in ("time", "ip", "os", "fichier", "exit"):
         print("Commande invalide!")
         continue
-    s.send(requestToServer.encode())
-    response = s.recv(1024).decode()
-    print(response)
+    elif requestToServer == "fichier":
+        folderToCreate = "./downloadsFromServer/"
+        os.mkdir(folderToCreate)
+        s.send(requestToServer.encode())
+        response = s.recv(1024).decode()
+        f = open(folderToCreate+"donneesTelecharges.txt", "a")
+        f.write(response)
+        f.close()
+        print("Fichier donneesEnregistres.txt cree dans "+folderToCreate)
+    else:
+        s.send(requestToServer.encode())
+        response = s.recv(1024).decode()
+        print(response)
         
     
     

@@ -3,7 +3,7 @@ import sys
 import socket
 from datetime import datetime
 
-def setup_socket(port=1337):
+def setup_socket(port=1339):
     s = socket.socket()
     s.bind(('', port))
     s.listen()
@@ -37,7 +37,11 @@ try:
             elif data == 'fichier':
                 filename="./donnees.txt"
                 myfile = open(filename, "rb")
-                client.send(myfile)
+                myfile_data = myfile.read()
+                myfile.close()
+                client.send(myfile_data)
+            data = client.recv(1024).decode()
+            print(str(data))
 except InterruptedError: # If we interrupt using CTRL+C
     print("Terminating...")
     server_socket.close()    
