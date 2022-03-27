@@ -3,7 +3,7 @@ import sys
 import socket
 from datetime import datetime
 
-def setup_socket(port=1350):
+def setup_socket(port=1337):
     s = socket.socket()
     s.bind(('', port))
     s.listen()
@@ -25,13 +25,15 @@ try:
         
         # Main logic part
         data = client.recv(1024).decode()
+        print(str(data))
         while data != 'exit':            
             if data == 'time':
                 client.send(str(datetime.now().time()).encode())
             elif data == 'ip':
-                client.send(str(client_ip).encode())
+                client.send(client_ip[0].encode())
+                print(client_ip[0])
             elif data == 'os':
-                client.send(str(platform.platform()).encode())
+                client.send(platform.platform().encode())
             elif data == 'fichier':
                 filename="./donnees.txt"
                 myfile = open(filename, "rb")
