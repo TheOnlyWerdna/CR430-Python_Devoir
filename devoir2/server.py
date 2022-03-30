@@ -1,9 +1,10 @@
+from http import server
 import platform
 import sys
 import socket
 from datetime import datetime
 
-def setup_socket(port=1339):
+def setup_socket(port=1337):
     s = socket.socket()
     s.bind(('', port))
     s.listen()
@@ -21,6 +22,7 @@ try:
     BUFFER_SIZE = 1024
     while True:
         client, client_ip = server_socket.accept()
+        client.settimeout(20.0)
         client.send(f"Accepted client with addr: '{client_ip[0]}'. Waiting for data...".encode())
         
         # Main logic part
@@ -44,7 +46,11 @@ try:
             print(str(data))
 except InterruptedError: # If we interrupt using CTRL+C
     print("Terminating...")
-    server_socket.close()    
+    server_socket.close()   
+except socket.timeout:
+    print("Timeout du a une inactivite de 20 secondes.")
+    client.send("Timeout du a une inactivite de 20 secondes.".encode())
+    server_socket.close()
 except Exception as err:
     print(f"[ERROR]: {err}")
     sys.exit(1)
