@@ -98,7 +98,7 @@ while connectedToServer:
         downloadAndSaveFileTo(getFolderName(), getResponseUsing(availableSocket))
         showDownloadConfirmationTo(getFolderName())
     elif userSendsExit(request):
-        print(EXITMESSAGE)
+        show(EXITMESSAGE)
         sendUsing(availableSocket, request)
         disconnectFromServerUsing(availableSocket)
         stopClient()
