@@ -1,37 +1,45 @@
-# Import socket module
 import socket			
 import os
 import shutil
-# Create a socket object
-availableSocket = socket.socket()	
+import sys
 
-
-# Define the port on which you want to connect
-port = 1337
-localhost = '127.0.0.1'
-
-def showMenu():
-    print("Entrez une des commandes ci-dessous: ")
-    print("TIME pour avoir le temps")
-    print("IP pour avoir l'adresse ip")
-    print("OS pour obtenir de l'information sur le systeme d'exploitation")
-    print("FICHIER pour obtenir un fichier factice")
-    print("EXIT pour quitter")
+PORT = 1338
+LOCALHOST = '127.0.0.1'
+EXITMESSAGE="Deconnecte du serveur. Au revoir."
+INVALIDCOMMANDMESSAGE="Commande invalide!"
+FILENAME="donneesTelecharges.txt"
+EXITCOMMAND="exit"
+FILESAVEDIN="Fichier " +FILENAME+ " cree dans "
+FILECOMMAND="file"
+TIMECOMMAND="time"
+IPCOMMAND="ip"
+OSCOMMAND="os"
+CHOICE="Choix: "
+APPENDTOFILE="a"
+DOWNLOADFOLDERNAME="./downloadsFromServer/"
+MAXDATASIZE=1024
+MENU="""
+Entrez une des commandes ci-dessous: 
+TIME pour avoir le temps.
+IP pour avoir l'adresse ip.
+OS pour obtenir de l'information sur le systeme d'exploitation.
+FICHIER pour obtenir un fichier factice.
+EXIT pour quitter.
+"""
+availableSocket = socket.socket()
+	
 
 def getChosenOption():
-    return str(input("Choix: ")).lower()
+    return str(input(CHOICE)).lower()
 
 def notValid(request):
-    return request not in ("time", "ip", "os", "fichier", "exit")
-
-def showInvalidRequestMessage():
-    print("Commande invalide!")
+    return request not in (TIMECOMMAND, IPCOMMAND, OSCOMMAND, FILECOMMAND, EXITCOMMAND)
 
 def isFileDownload(request):
-    return request == "fichier"
+    return request == FILECOMMAND
 
 def getFolderName():
-    return "./downloadsFromServer/"
+    return DOWNLOADFOLDERNAME
 
 def alreadyCreated(folder):
     return os.path.exists(folder)
@@ -46,44 +54,54 @@ def sendUsing(availableSocket, request):
     availableSocket.send(request.encode())
 
 def getResponseUsing(availableSocket):
-    return availableSocket.recv(1024).decode()
+    return availableSocket.recv(MAXDATASIZE).decode()
 
 def downloadAndSaveFileTo(folder, response):
-    f = open(folder+"donneesTelecharges.txt", "a")
+    f = open(folder+FILENAME, APPENDTOFILE)
     f.write(response)
     f.close()
 
 def showDownloadConfirmationTo(folder):
-    print("Fichier donneesEnregistres.txt cree dans "+folder)
+    print(FILESAVEDIN+folder)
 
 def show(response):
     print(response)
 
 def connectToServerUsing(availableSocket):
-    availableSocket.connect((localhost, port))
+    availableSocket.connect((LOCALHOST, PORT))
 
 def disconnectFromServerUsing(availableSocket):
     availableSocket.close()	
+
+def userSendsExit(request):
+    return request == EXITCOMMAND
+
+def stopClient():
+    sys.exit(0)
 
 connectToServerUsing(availableSocket)
 show(getResponseUsing(availableSocket))
 connectedToServer = True
 
 while connectedToServer:
-    showMenu()
+    show(MENU)
     request = getChosenOption()
 
     if notValid(request):
-        showInvalidRequestMessage()
+        show(INVALIDCOMMANDMESSAGE)
         continue
     elif isFileDownload(request):
-        folder = getFolderName()
-        if alreadyCreated(folder):
-            deleteCreated(folder)
-        createDestination(folder)
+        if alreadyCreated(getFolderName()):
+            deleteCreated(getFolderName())
+        createDestination(getFolderName())
         sendUsing(availableSocket, request)
-        downloadAndSaveFileTo(folder, getResponseUsing(availableSocket))
-        showDownloadConfirmationTo(folder)
+        downloadAndSaveFileTo(getFolderName(), getResponseUsing(availableSocket))
+        showDownloadConfirmationTo(getFolderName())
+    elif userSendsExit(request):
+        print(EXITMESSAGE)
+        sendUsing(availableSocket, request)
+        disconnectFromServerUsing(availableSocket)
+        stopClient()
     else:
         sendUsing(availableSocket, request)
         show(getResponseUsing(availableSocket))
